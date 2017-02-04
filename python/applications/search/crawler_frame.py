@@ -28,10 +28,10 @@ class CrawlerFrame(IApplication):
     def __init__(self, frame):
         self.starttime = time()
         # Set app_id <student_id1>_<student_id2>...
-        self.app_id = ""
+        self.app_id = "31721795_50924931_85241493"
         # Set user agent string to IR W17 UnderGrad <student_id1>, <student_id2> ...
         # If Graduate studetn, change the UnderGrad part to Grad.
-        self.UserAgentString = None
+        self.UserAgentString = "IR W17 Grad 31721795 50924931 85241493"
 		
         self.frame = frame
         assert(self.UserAgentString != None)
@@ -76,7 +76,16 @@ def process_url_group(group, useragentstr):
 STUB FUNCTIONS TO BE FILLED OUT BY THE STUDENT.
 '''
 def extract_next_links(rawDatas):
+    from lxml import html
     outputLinks = list()
+
+    for data in rawDatas:
+        curr_url = data[0]
+        htmlStr = data[1]
+        dom =  html.fromstring(htmlStr)
+        for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
+            print link
+    # print rawDatas
     '''
     rawDatas is a list of tuples -> [(url1, raw_content1), (url2, raw_content2), ....]
     the return of this function should be a list of urls in their absolute form
