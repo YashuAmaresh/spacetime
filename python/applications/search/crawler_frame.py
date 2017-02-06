@@ -9,6 +9,7 @@ from time import time
 try:
     # For python 2
     from urlparse import urlparse, parse_qs
+    already_visited = set()
 except ImportError:
     # For python 3
     from urllib.parse import urlparse, parse_qs
@@ -76,15 +77,30 @@ def process_url_group(group, useragentstr):
 STUB FUNCTIONS TO BE FILLED OUT BY THE STUDENT.
 '''
 def extract_next_links(rawDatas):
-    from lxml import html
     outputLinks = list()
+    from bs4 import BeautifulSoup
+    from lxml.html import soupparser
 
     for data in rawDatas:
         curr_url = data[0]
         htmlStr = data[1]
-        dom =  html.fromstring(htmlStr)
-        for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
-            print link
+
+        if htmlStr:
+
+            # BeautifulSoup(htmlStr, "html.parser")
+
+            '''
+            Using BeautifulSoup Parser to auto-detect the encoding of the HTML content
+            '''
+            dom = soupparser.fromstring(htmlStr)
+            # dom =  html.fromstring(htmlStr)
+            # print dom.xpath('//a/@href')
+            for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
+                print link
+
+            links = dom.xpath('//a/@href')
+            absoluteLinks = convertToAbsolute(curr_url, links)
+
     # print rawDatas
     '''
     rawDatas is a list of tuples -> [(url1, raw_content1), (url2, raw_content2), ....]
@@ -104,16 +120,64 @@ def is_valid(url):
 
     This is a great place to filter out crawler traps.
     '''
+
+    try:
+        already_visited
+
+    except NameError:
+        already_visited = set()
+
     parsed = urlparse(url)
     if parsed.scheme not in set(["http", "https"]):
         return False
     try:
-        return ".ics.uci.edu" in parsed.hostname \
+        return_val = True
+
+        return_val = ".ics.uci.edu" in parsed.hostname \
             and not re.match(".*\.(css|js|bmp|gif|jpe?g|ico" + "|png|tiff?|mid|mp2|mp3|mp4"\
             + "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf" \
             + "|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1" \
             + "|thmx|mso|arff|rtf|jar|csv"\
             + "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
+        '''
+        Check here for crawler traps
+        '''
+        # 1. Repeating directories
+        if re.match("^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", parsed.path.lower()):
+            return_val = False
+
+        # 2. Calendar traps - Keep track of already visited paths
+        elif parsed.path.lower() in already_visited:
+            return_val = False
+
+        #Add the current URL path to set of already visited paths 
+        else: 
+            already_visited.add(parsed.path.lower())
+            return_val = True
+
+        return return_val
+
     except TypeError:
         print ("TypeError for ", parsed)
+
+
+def convertToAbsolute(url, links):
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
