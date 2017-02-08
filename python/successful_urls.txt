@@ -88,3 +88,4 @@ http://www.ics.uci.edu/community/news/spotlight/spotlight_butterworth_beall_2014
 http://ganglia.ics.uci.edu./graph_all_periods.php?c=asterix&h=rainbow-red.ics.uci.edu&r=hour&z=large&jr=&js=&st=1486518405&v=1308.76&m=bytes_in&vl=bytes%2Fsec&ti=Bytes%20Received&z=large
 http://ganglia.ics.uci.edu/graph_all_periods.php?c=sensorium&h=sensorium-34.ics.uci.edu&r=hour&z=large&jr=&js=&st=1486518414&v=0&m=proc_run&vl=%20&ti=Total%20Running%20Processes&z=large
 http://ganglia.ics.uci.edu./graph_all_periods.php?c=titan&h=rhea.ics.uci.edu&r=hour&z=large&jr=&js=&st=1486518445&v=0.0&m=cpu_user&vl=%25&ti=CPU%20User&z=large
+http://ganglia.ics.uci.edu/graph_all_periods.php?c=igb-benzene&h=c1ccccc1-18.ics.uci.edu&r=hour&z=large&jr=&js=&st=1486525768&v=52.7&m=part_max_used&vl=%25&ti=Maximum%20Disk%20Space%20Used&z=large

@@ -153,7 +153,7 @@ def is_valid(url):
         Check here for crawler traps
         '''
         # 1. Repeating directories
-        if re.match("^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", parsed.path.lower()):
+        if re.match("^.*?(/.+?/).*?\\1.*$|^.*?/(.+?/)\\2.*$", parsed.path.lower()):
             return_val = False
 
         # 2. Calendar traps - Keep track of already visited paths
