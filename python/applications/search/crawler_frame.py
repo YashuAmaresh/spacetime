@@ -8,7 +8,7 @@ from time import time
 
 try:
     # For python 2
-    from urlparse import urlparse, parse_qs
+    from urlparse import urlparse, parse_qs, urljoin
     already_visited = set()
 except ImportError:
     # For python 3
@@ -92,13 +92,20 @@ def extract_next_links(rawDatas):
             '''
             Using BeautifulSoup Parser to auto-detect the encoding of the HTML content
             '''
-            dom = soupparser.fromstring(htmlStr)
+
+            root = html.fromstring(htmlStr)
+            try:
+                ignore = html.tostring(root, encoding='unicode')
+
+            except UnicodeDecodeError:
+                root = html.soupparser.fromstring(htmlStr)
+            # dom = soupparser.fromstring(htmlStr)
             # dom =  html.fromstring(htmlStr)
             # print dom.xpath('//a/@href')
-            for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
+            for link in root.xpath('//a/@href'): # select the url in href for all a tags(links)
                 print link
 
-            links = dom.xpath('//a/@href')
+            links = root.xpath('//a/@href')
             absoluteLinks = convertToAbsolute(curr_url, links)
 
     # print rawDatas
@@ -133,6 +140,7 @@ def is_valid(url):
     try:
         return_val = True
 
+
         return_val = ".ics.uci.edu" in parsed.hostname \
             and not re.match(".*\.(css|js|bmp|gif|jpe?g|ico" + "|png|tiff?|mid|mp2|mp3|mp4"\
             + "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf" \
@@ -140,6 +148,7 @@ def is_valid(url):
             + "|thmx|mso|arff|rtf|jar|csv"\
             + "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
+        print "Parsed hostname : ", parsed.hostname, " : ", return_val
         '''
         Check here for crawler traps
         '''
@@ -148,12 +157,12 @@ def is_valid(url):
             return_val = False
 
         # 2. Calendar traps - Keep track of already visited paths
-        elif parsed.path.lower() in already_visited:
+        elif parsed.netloc.lower() + "/" + parsed.path.lower().lstrip("/") in already_visited:
             return_val = False
 
         #Add the current URL path to set of already visited paths 
         else: 
-            already_visited.add(parsed.path.lower())
+            already_visited.add(parsed.netloc.lower() + "/" + parsed.path.lower().lstrip("/"))
             return_val = True
 
         return return_val
@@ -163,7 +172,47 @@ def is_valid(url):
 
 
 def convertToAbsolute(url, links):
-    pass
+    '''
+        <scheme>://<username>:<password>@<host>:<port>/<path>;<parameters>?<query>#<fragment>
+        Not handled mailto and fragments(#)
+        Also, javascript needs to be handled
+    '''
+    parsed_url = urlparse(url)
+    base_url = parsed_url.scheme +"://"+ parsed_url.netloc + parsed_url.path
+    absolutelinks = list()
+    for link in links:
+        link = link.strip()
+
+        if link.find('http') == 0:
+            absolutelinks.append(link)
+
+        elif link.find('//') == 0:
+            absolutelinks.append(link)
+
+        elif link.find('#') == 0 or link.find("javascript") == 0 or link.find("mailto") == 0: #****
+            pass
+
+        elif link.find("/") == 0:
+            if re.match(".*\.(asp|aspx|axd|asx|asmx|ashx|css|cfm|yaws|swf|html|htm|xhtml" \
+                + "|jhtmljsp|jspx|wss|do|action|js|pl|php|php4|php3|phtml|py|rb|rhtml|shtml|xml|rss|svg|cgi|dll)$", parsed_url.path.lower()):
+                # print "\n\n\n\nHere\n\n\n\n"
+                index = parsed_url.path.rfind("/")
+                parent_path = parsed_url.path[:index]
+                result = parsed_url.scheme +"://"+ parsed_url.netloc + parent_path + link
+
+            else:
+                result = parsed_url.scheme +"://"+ parsed_url.netloc + parsed_url.path.rstrip("/") + link
+
+            absolutelinks.append(result)
+
+        else:
+
+            absolutelinks.append(urljoin(base_url,link))
+    
+    print base_url
+    
+    for urls in absolutelinks:
+        print "Link= " + urls +"\n" 
 
 
 
